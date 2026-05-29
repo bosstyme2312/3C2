@@ -1,0 +1,217 @@
+# index.html sans connexion
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Révision 3e ULTIME</title>
+
+<style>
+body{font-family:sans-serif;margin:0;background:#0f172a;color:white}
+header{text-align:center;padding:20px;background:#020617}
+.tabs{display:flex}
+.tab{flex:1;padding:10px;text-align:center;cursor:pointer;background:#1e293b}
+.tab.active{background:#38bdf8;color:black}
+.content{display:none;padding:20px}
+.content.active{display:block}
+.item{background:#1e293b;padding:10px;margin:10px 0;border-radius:8px}
+button,input{padding:8px;margin:5px;border:none;border-radius:5px}
+button{cursor:pointer}
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>📚 Révision 3e ULTIME</h2>
+</header>
+
+<!-- APP -->
+<div id="app">
+
+<div class="tabs">
+<div class="tab active" onclick="switchTab('cours',event)">Cours</div>
+<div class="tab" onclick="switchTab('quiz',event)">Quiz</div>
+<div class="tab" onclick="switchTab('classement',event)">Classement</div>
+<div class="tab" onclick="switchTab('notes',event)">Fiches</div>
+</div>
+
+<div id="cours" class="content active">
+<h3>📂 Fichiers</h3>
+<input type="file" onchange="addFile(event)">
+<div id="files"></div>
+</div>
+
+<div id="quiz" class="content">
+<h3>Quiz</h3>
+<button onclick="startQuiz()">Lancer</button>
+<div id="quizBox"></div>
+</div>
+
+<div id="classement" class="content">
+<h3>🏆 Classement</h3>
+<div id="ranking"></div>
+</div>
+
+<div id="notes" class="content">
+<h3>📝 Fiches</h3>
+<input id="noteInput">
+<button onclick="addNote()">Ajouter</button>
+<div id="notesList"></div>
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs }
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyDxRuJj6TkqFz4r2jJy2AbGaCc_8ICYdoM",
+authDomain: "revision-3e.firebaseapp.com",
+projectId: "revision-3e"
+};
+
+const appFirebase = initializeApp(firebaseConfig);
+const db = getFirestore(appFirebase);
+
+const currentUser = "Utilisateur";
+
+/* ONGLET */
+window.switchTab = (id,e)=>{
+document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+e.target.classList.add("active");
+
+document.querySelectorAll(".content").forEach(c=>c.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+};
+
+/* FICHIERS */
+window.addFile = async (e)=>{
+const file = e.target.files[0];
+const reader = new FileReader();
+
+reader.onload = async ()=>{
+await addDoc(collection(db,"files"),{
+name:file.name,
+data:reader.result
+});
+loadFiles();
+};
+
+reader.readAsDataURL(file);
+};
+
+async function loadFiles(){
+const snap = await getDocs(collection(db,"files"));
+files.innerHTML="";
+
+snap.forEach(doc=>{
+const f = doc.data();
+const div=document.createElement("div");
+div.className="item";
+
+const a=document.createElement("a");
+a.href=f.data;
+a.textContent=f.name;
+a.target="_blank";
+
+div.appendChild(a);
+files.appendChild(div);
+});
+}
+
+/* QUIZ */
+const questions=[
+{q:"7×8 ?",r:"56"},
+{q:"Auteur des Misérables ?",r:"Victor Hugo"},
+{q:"Capitale Italie ?",r:"Rome"}
+];
+
+window.startQuiz=()=>{
+let i=0,score=0;
+
+function ask(){
+if(i>=questions.length){
+quizBox.innerHTML=`<p>Score : ${score}/${questions.length}</p>`;
+saveScore(score);
+return;
+}
+
+const q=questions[i];
+quizBox.innerHTML=`
+<p>${q.q}</p>
+<input id="answer">
+<button onclick="submitAnswer()">Valider</button>
+`;
+
+window.submitAnswer=()=>{
+if(answer.value.toLowerCase()==q.r.toLowerCase())score++;
+i++;
+ask();
+};
+}
+ask();
+};
+
+/* CLASSEMENT */
+async function saveScore(s){
+await addDoc(collection(db,"scores"),{
+user:currentUser,
+score:s
+});
+loadRanking();
+}
+
+async function loadRanking(){
+const snap=await getDocs(collection(db,"scores"));
+let list=[];
+snap.forEach(d=>list.push(d.data()));
+
+list.sort((a,b)=>b.score-a.score);
+
+ranking.innerHTML=list.map((e,i)=>
+`<p>${i+1}. ${e.user} — ${e.score}</p>`
+).join("");
+}
+
+/* NOTES */
+window.addNote=async ()=>{
+const input=document.getElementById("noteInput");
+if(!input.value)return;
+
+await addDoc(collection(db,"notes"),{
+user:currentUser,
+text:input.value
+});
+
+input.value="";
+loadNotes();
+};
+
+async function loadNotes(){
+const snap=await getDocs(collection(db,"notes"));
+notesList.innerHTML="";
+
+snap.forEach(doc=>{
+const n=doc.data();
+if(n.user===currentUser){
+const div=document.createElement("div");
+div.className="item";
+div.textContent=n.text;
+notesList.appendChild(div);
+}
+});
+}
+
+loadFiles();
+loadRanking();
+loadNotes();
+
+</script>
+</body>
+</html>
+```
