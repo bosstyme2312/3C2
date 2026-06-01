@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StudyHub 3e Ultimate</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#0f172a;color:#fff}
+header{background:linear-gradient(135deg,#2563eb,#7c3aed);padding:25px;text-align:center}
+.tabs{display:flex;flex-wrap:wrap;justify-content:center;background:#020617}
+.tabs button{background:none;border:none;color:#fff;padding:14px;cursor:pointer}
+.page{display:none;padding:20px;max-width:1200px;margin:auto}
+.active{display:block}
+.card{background:#1e293b;padding:20px;border-radius:15px;margin:12px 0}
+button.action{background:#3b82f6;color:#fff;border:none;padding:10px;border-radius:8px;cursor:pointer}
+input{padding:10px;border:none;border-radius:8px}
+</style>
+</head>
+<body>
+
+<header>
+<h1>🎓 StudyHub 3e Ultimate</h1>
+<p id="days"></p>
+</header>
+
+<div class="tabs">
+<button onclick="tab('home')">🏠 Accueil</button>
+<button onclick="tab('quiz')">📝 Quiz</button>
+<button onclick="tab('games')">🎮 Jeux</button>
+<button onclick="tab('notes')">📈 Moyenne</button>
+</div>
+
+<div id="home" class="page active">
+<div class="card">
+<h2>Bienvenue</h2>
+<p>Révisions, quiz, jeux et calculateur de moyenne.</p>
+</div>
+</div>
+
+<div id="quiz" class="page">
+<div class="card">
+<h2>Quiz</h2>
+<p id="question"></p>
+<input id="answer">
+<button class="action" onclick="checkQuiz()">Valider</button>
+<p id="quizResult"></p>
+<p id="quizScore">Score : 0</p>
+</div>
+</div>
+
+<div id="games" class="page">
+<div class="card">
+<h2>🎰 Machine à chance</h2>
+<p>💰 Crédits : <span id="credits">100</span></p>
+<p>⭐ XP : <span id="xp">0</span></p>
+<p>🏆 Niveau : <span id="level">1</span></p>
+<button class="action" onclick="slot()">Jouer (-10)</button>
+<button class="action" onclick="bonus()">Bonus</button>
+<div id="slotR"></div>
+</div>
+</div>
+
+<div id="notes" class="page">
+<div class="card">
+<h2>Calculateur de moyenne</h2>
+<input id="n1" placeholder="Note 1"><br><br>
+<input id="n2" placeholder="Note 2"><br><br>
+<input id="n3" placeholder="Note 3"><br><br>
+<input id="n4" placeholder="Note 4"><br><br>
+<input id="n5" placeholder="Note 5"><br><br>
+<input id="n6" placeholder="Note 6"><br><br>
+<input id="n7" placeholder="Note 7"><br><br>
+<input id="n8" placeholder="Note 8"><br><br>
+<input id="n9" placeholder="Note 9"><br><br>
+<input id="n10" placeholder="Note 10"><br><br>
+<button class="action" onclick="avg()">Calculer</button>
+<p id="avgR"></p>
+</div>
+</div>
+
+<script>
+function tab(id){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+}
+
+const questions=[
+["Combien font 8×9 ?","72"],["Capitale de l'Italie ?","rome"],["Capitale du Japon ?","tokyo"],
+["Début de la Première Guerre mondiale ?","1914"],["Formule de l'eau ?","h2o"],
+["Qui a écrit Les Misérables ?","victor hugo"],["Combien y a-t-il de continents ?","7"],
+["Planète rouge ?","mars"],["Capitale de l'Allemagne ?","berlin"],["7×8 ?","56"]
+];
+let current=0,score=0;
+function nextQ(){current=Math.floor(Math.random()*questions.length);question.innerText=questions[current][0];}
+function checkQuiz(){
+ if(answer.value.toLowerCase()==questions[current][1]){score++;quizResult.innerText="✅ Bonne réponse";}
+ else{quizResult.innerText="❌ Réponse : "+questions[current][1];}
+ quizScore.innerText="Score : "+score;
+ answer.value="";
+ nextQ();
+}
+nextQ();
+
+let credits=100,xp=0,level=1;
+function updateStats(){
+ creditsEl=document.getElementById('credits');
+ creditsEl.textContent=credits;
+ xpEl=document.getElementById('xp');
+ xpEl.textContent=xp;
+ levelEl=document.getElementById('level');
+ levelEl.textContent=level;
+}
+function addXP(v){xp+=v;while(xp>=level*100)level++;updateStats();}
+function slot(){
+ if(credits<10){slotR.innerHTML="Plus assez de crédits";return;}
+ credits-=10;
+ let e=["🍒","🍋","🍉","⭐","💎"];
+ let a=e[Math.floor(Math.random()*e.length)];
+ let b=e[Math.floor(Math.random()*e.length)];
+ let c=e[Math.floor(Math.random()*e.length)];
+ let gain=0;
+ if(a==b&&b==c){gain=150;addXP(50);}
+ else if(a==b||b==c||a==c){gain=40;addXP(10);}
+ credits+=gain;
+ slotR.innerHTML="<h3>"+a+" "+b+" "+c+"</h3>Gain : "+gain;
+ updateStats();
+}
+function bonus(){credits+=25;addXP(5);updateStats();slotR.innerHTML="🎁 +25 crédits";}
+updateStats();
+
+function avg(){
+ let notes=[n1,n2,n3,n4,n5,n6,n7,n8,n9,n10].map(x=>+x.value||0).filter(x=>x>0);
+ if(!notes.length){avgR.innerText="Aucune note";return;}
+ let m=notes.reduce((a,b)=>a+b,0)/notes.length;
+ avgR.innerText="📈 Moyenne : "+m.toFixed(2)+"/20";
+}
+
+const brevet=new Date("2027-06-28");
+days.innerText="📅 "+Math.max(0,Math.ceil((brevet-new Date())/86400000))+" jours avant le brevet";
+</script>
+
+</body>
+</html>
