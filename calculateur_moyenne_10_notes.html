@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculateur de Moyenne</title>
+<style>
+body{font-family:Arial,sans-serif;background:#0f172a;color:white;padding:20px}
+.card{background:#1e293b;padding:20px;border-radius:12px;max-width:700px;margin:auto}
+input{display:block;width:100%;padding:10px;margin:8px 0;border:none;border-radius:8px}
+button{padding:10px 15px;border:none;border-radius:8px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>📈 Calculateur de Moyenne</h1>
+
+<input id="n1" placeholder="Note 1">
+<input id="n2" placeholder="Note 2">
+<input id="n3" placeholder="Note 3">
+<input id="n4" placeholder="Note 4">
+<input id="n5" placeholder="Note 5">
+<input id="n6" placeholder="Note 6">
+<input id="n7" placeholder="Note 7">
+<input id="n8" placeholder="Note 8">
+<input id="n9" placeholder="Note 9">
+<input id="n10" placeholder="Note 10">
+
+<button onclick="avg()">Calculer</button>
+
+<h2 id="resultat"></h2>
+<h3 id="max"></h3>
+<h3 id="min"></h3>
+
+</div>
+
+<script>
+function avg(){
+let notes=[
++n1.value||0,+n2.value||0,+n3.value||0,+n4.value||0,+n5.value||0,
++n6.value||0,+n7.value||0,+n8.value||0,+n9.value||0,+n10.value||0
+];
+
+let remplies=notes.filter(n=>n>0);
+
+if(remplies.length===0){
+resultat.innerText="Aucune note saisie";
+return;
+}
+
+let moyenne=remplies.reduce((a,b)=>a+b,0)/remplies.length;
+
+resultat.innerText="📈 Moyenne : "+moyenne.toFixed(2)+"/20";
+max.innerText="🏆 Meilleure note : "+Math.max(...remplies);
+min.innerText="📉 Plus faible note : "+Math.min(...remplies);
+}
+</script>
+</body>
+</html>
