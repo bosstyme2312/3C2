@@ -1,217 +1,292 @@
-# index.html sans connexion
-
-```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Révision 3e ULTIME</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StudyHub 3e Pro</title>
 <style>
-body{font-family:sans-serif;margin:0;background:#0f172a;color:white}
-header{text-align:center;padding:20px;background:#020617}
-.tabs{display:flex}
-.tab{flex:1;padding:10px;text-align:center;cursor:pointer;background:#1e293b}
-.tab.active{background:#38bdf8;color:black}
-.content{display:none;padding:20px}
-.content.active{display:block}
-.item{background:#1e293b;padding:10px;margin:10px 0;border-radius:8px}
-button,input{padding:8px;margin:5px;border:none;border-radius:5px}
-button{cursor:pointer}
+body{margin:0;font-family:Segoe UI,Arial;background:#0f172a;color:#fff}
+header{background:linear-gradient(135deg,#2563eb,#7c3aed);padding:25px;text-align:center}
+.tabs{display:flex;flex-wrap:wrap;justify-content:center;background:#020617}
+.tabs button{background:none;border:none;color:white;padding:14px;cursor:pointer}
+.page{display:none;max-width:1300px;margin:auto;padding:20px}
+.page.active{display:block}
+.card{background:#1e293b;padding:18px;border-radius:15px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px}
+button.action{background:#3b82f6;color:white;border:none;padding:10px;border-radius:8px}
+input{padding:10px;border:none;border-radius:8px}
+details{margin:10px 0}
 </style>
 </head>
-
 <body>
-
 <header>
-<h2>📚 Révision 3e ULTIME</h2>
+<h1>🎓 StudyHub 3e Pro</h1>
+<div id="days"></div>
 </header>
 
-<!-- APP -->
-<div id="app">
-
 <div class="tabs">
-<div class="tab active" onclick="switchTab('cours',event)">Cours</div>
-<div class="tab" onclick="switchTab('quiz',event)">Quiz</div>
-<div class="tab" onclick="switchTab('classement',event)">Classement</div>
-<div class="tab" onclick="switchTab('notes',event)">Fiches</div>
+<button onclick="openTab('accueil')">🏠 Accueil</button>
+<button onclick="openTab('fiches')">📚 Fiches</button>
+<button onclick="openTab('quiz')">📝 Quiz</button>
+<button onclick="openTab('jeux')">🎮 Jeux</button>
+<button onclick="openTab('outils')">🛠️ Outils</button>
 </div>
 
-<div id="cours" class="content active">
-<h3>📂 Fichiers</h3>
-<input type="file" onchange="addFile(event)">
-<div id="files"></div>
+<div id="accueil" class="page active">
+<div class="card">
+<h2>Bienvenue</h2>
+<p>Plateforme de révision 3e avec fiches détaillées, quiz et jeux.</p>
+</div>
 </div>
 
-<div id="quiz" class="content">
-<h3>Quiz</h3>
-<button onclick="startQuiz()">Lancer</button>
-<div id="quizBox"></div>
+<div id="fiches" class="page">
+<div class="card">
+<h2>📐 Mathématiques</h2>
+<details><summary>Pythagore</summary>
+Dans un triangle rectangle : c² = a² + b². Utilisé pour calculer une longueur manquante.
+</details>
+<details><summary>Thalès</summary>
+Si deux droites sont parallèles, les longueurs sont proportionnelles.
+</details>
+<details><summary>Fonctions</summary>
+Une fonction associe un nombre à un autre nombre. On la lit dans un tableau ou un graphique.
+</details>
 </div>
 
-<div id="classement" class="content">
-<h3>🏆 Classement</h3>
-<div id="ranking"></div>
+<div class="card">
+<h2>📖 Français</h2>
+<ul>
+<li>Comparaison : utilise « comme ».</li>
+<li>Métaphore : comparaison sans outil comparatif.</li>
+<li>Hyperbole : exagération.</li>
+<li>Argumentation : défendre une opinion avec des arguments.</li>
+</ul>
 </div>
 
-<div id="notes" class="content">
-<h3>📝 Fiches</h3>
-<input id="noteInput">
-<button onclick="addNote()">Ajouter</button>
-<div id="notesList"></div>
+<div class="card">
+<h2>🌍 Histoire-Géographie</h2>
+<p><b>Première Guerre mondiale :</b> 1914-1918.</p>
+<p><b>Seconde Guerre mondiale :</b> 1939-1945.</p>
+<p><b>Mondialisation :</b> augmentation des échanges entre les territoires.</p>
 </div>
 
+<div class="card">
+<h2>🧬 SVT</h2>
+<p>L'ADN contient l'information génétique.</p>
+<p>La sélection naturelle explique l'évolution des espèces.</p>
 </div>
 
-<script type="module">
+<div class="card">
+<h2>⚡ Physique-Chimie</h2>
+<p>Loi d'Ohm : U = R × I.</p>
+<p>L'eau a pour formule H₂O.</p>
+</div>
+</div>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs }
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-apiKey: "AIzaSyDxRuJj6TkqFz4r2jJy2AbGaCc_8ICYdoM",
-authDomain: "revision-3e.firebaseapp.com",
-projectId: "revision-3e"
-};
-
-const appFirebase = initializeApp(firebaseConfig);
-const db = getFirestore(appFirebase);
-
-const currentUser = "Utilisateur";
-
-/* ONGLET */
-window.switchTab = (id,e)=>{
-document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-e.target.classList.add("active");
-
-document.querySelectorAll(".content").forEach(c=>c.classList.remove("active"));
-document.getElementById(id).classList.add("active");
-};
-
-/* FICHIERS */
-window.addFile = async (e)=>{
-const file = e.target.files[0];
-const reader = new FileReader();
-
-reader.onload = async ()=>{
-await addDoc(collection(db,"files"),{
-name:file.name,
-data:reader.result
-});
-loadFiles();
-};
-
-reader.readAsDataURL(file);
-};
-
-async function loadFiles(){
-const snap = await getDocs(collection(db,"files"));
-files.innerHTML="";
-
-snap.forEach(doc=>{
-const f = doc.data();
-const div=document.createElement("div");
-div.className="item";
-
-const a=document.createElement("a");
-a.href=f.data;
-a.textContent=f.name;
-a.target="_blank";
-
-div.appendChild(a);
-files.appendChild(div);
-});
-}
-
-/* QUIZ */
-const questions=[
-{q:"7×8 ?",r:"56"},
-{q:"Auteur des Misérables ?",r:"Victor Hugo"},
-{q:"Capitale Italie ?",r:"Rome"}
-];
-
-window.startQuiz=()=>{
-let i=0,score=0;
-
-function ask(){
-if(i>=questions.length){
-quizBox.innerHTML=`<p>Score : ${score}/${questions.length}</p>`;
-saveScore(score);
-return;
-}
-
-const q=questions[i];
-quizBox.innerHTML=`
-<p>${q.q}</p>
+<div id="quiz" class="page">
+<div class="card">
+<h2>📝 Quiz</h2>
+<p id="question"></p>
 <input id="answer">
-<button onclick="submitAnswer()">Valider</button>
-`;
+<button class="action" onclick="checkAnswer()">Valider</button>
+<p id="result"></p>
+<p id="score">Score : 0</p>
+</div>
+</div>
 
-window.submitAnswer=()=>{
-if(answer.value.toLowerCase()==q.r.toLowerCase())score++;
-i++;
-ask();
-};
+<div id="jeux" class="page">
+<div class="grid">
+
+<div class="card">
+<h3>🎲 Dé</h3>
+<button class="action" onclick="dice()">Lancer</button>
+<p id="diceR"></p>
+</div>
+
+<div class="card">
+<h3>✊ Pierre-Feuille-Ciseaux</h3>
+<button class="action" onclick="rps('Pierre')">Pierre</button>
+<button class="action" onclick="rps('Feuille')">Feuille</button>
+<button class="action" onclick="rps('Ciseaux')">Ciseaux</button>
+<p id="rpsR"></p>
+</div>
+
+<div class="card">
+<h3>🔢 Devine le nombre</h3>
+<input id="guess">
+<button class="action" onclick="guessGame()">Tester</button>
+<p id="guessR"></p>
+</div>
+
+<div class="card">
+<h3>🧠 Calcul mental</h3>
+<p>47 + 38 = ?</p>
+<input id="calc">
+<button class="action" onclick="calcGame()">OK</button>
+<p id="calcR"></p>
+</div>
+
+<div class="card">
+<h3>🌍 Capitales</h3>
+<p>Capitale de l'Allemagne ?</p>
+<input id="geo">
+<button class="action" onclick="geoGame()">OK</button>
+<p id="geoR"></p>
+</div>
+
+<div class="card">
+<h3>🔤 Pendu</h3>
+<p id="hangWord">_ _ _ _ _ _</p>
+<input id="letter" maxlength="1">
+<button class="action" onclick="hang()">Lettre</button>
+</div>
+
+<div class="card">
+<h3>🎰 Machine à chance</h3>
+<button class="action" onclick="slot()">Jouer</button>
+<p id="slotR"></p>
+</div>
+
+<div class="card">
+<h3>⚡ Réflexe</h3>
+<button class="action" onclick="reflex()">Tester</button>
+<p id="reflexR"></p>
+</div>
+
+</div>
+</div>
+
+<div id="outils" class="page">
+<div class="card">
+<h2>📈 Moyenne</h2>
+<input id="n1" placeholder="Note 1">
+<input id="n2" placeholder="Note 2">
+<input id="n3" placeholder="Note 3">
+<button class="action" onclick="avg()">Calculer</button>
+<p id="avgR"></p>
+</div>
+</div>
+
+<script>
+function openTab(id){
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
 }
-ask();
-};
 
-/* CLASSEMENT */
-async function saveScore(s){
-await addDoc(collection(db,"scores"),{
-user:currentUser,
-score:s
-});
-loadRanking();
+const questions = [
+["Combien font 8 × 9 ?","72"],
+["Combien font 12 × 12 ?","144"],
+["Quelle est la racine carrée de 81 ?","9"],
+["Quelle est la racine carrée de 100 ?","10"],
+["Combien de côtés possède un hexagone ?","6"],
+["Combien de côtés possède un octogone ?","8"],
+["Quel théorème utilise-t-on dans un triangle rectangle ?","pythagore"],
+["Quelle formule correspond à la loi d'Ohm ?","u=rxi"],
+["Quelle est la formule chimique de l'eau ?","h2o"],
+["Quel est le symbole chimique de l'or ?","au"],
+
+["Quel est le symbole chimique du fer ?","fe"],
+["Quel est le symbole chimique du sodium ?","na"],
+["Combien y a-t-il de continents ?","7"],
+["Quel est le plus grand continent ?","asie"],
+["Quel est le plus grand océan du monde ?","pacifique"],
+["Quelle est la capitale de la France ?","paris"],
+["Quelle est la capitale de l'Italie ?","rome"],
+["Quelle est la capitale de l'Espagne ?","madrid"],
+["Quelle est la capitale de l'Allemagne ?","berlin"],
+["Quelle est la capitale du Royaume-Uni ?","londres"],
+
+["Quelle est la capitale du Canada ?","ottawa"],
+["Quelle est la capitale du Japon ?","tokyo"],
+["Quelle est la langue officielle du Brésil ?","portugais"],
+["Quel pays a la forme d'une botte ?","italie"],
+["Quel est le plus long fleuve du monde ?","nil"],
+["En quelle année commence la Première Guerre mondiale ?","1914"],
+["En quelle année se termine la Première Guerre mondiale ?","1918"],
+["En quelle année commence la Seconde Guerre mondiale ?","1939"],
+["En quelle année se termine la Seconde Guerre mondiale ?","1945"],
+["Quel mur est tombé en 1989 ?","mur de berlin"],
+
+["Qui a écrit Les Misérables ?","victor hugo"],
+["Qui a écrit Le Petit Prince ?","antoine de saint-exupery"],
+["Quelle figure de style utilise le mot 'comme' ?","comparaison"],
+["Qu'est-ce qu'une métaphore ?","comparaison sans comme"],
+["Quelle est la devise de la République française ?","liberte egalite fraternite"],
+["Quel est le prénom de Molière ?","jean-baptiste"],
+["Que signifie ADN ?","acide desoxyribonucleique"],
+["Quel organe pompe le sang dans le corps ?","coeur"],
+["Combien de chambres possède le coeur humain ?","4"],
+["Quel gaz respirons-nous principalement ?","oxygene"],
+
+["Quel gaz les plantes absorbent-elles ?","dioxyde de carbone"],
+["Quel est le satellite naturel de la Terre ?","lune"],
+["Quelle planète est surnommée la planète rouge ?","mars"],
+["Quelle planète est la plus proche du Soleil ?","mercure"],
+["Combien de minutes y a-t-il dans 2 heures ?","120"],
+["Combien de secondes y a-t-il dans une minute ?","60"],
+["Quel est le résultat de 7 × 8 ?","56"],
+["Quel est le résultat de 15² ?","225"],
+["Qui a peint la Joconde ?","leonard de vinci"],
+["Quel est le plus grand mammifère du monde ?","baleine bleue"]
+];
+let current=0,score=0;
+function nextQ(){
+ current=Math.floor(Math.random()*questions.length);
+ question.innerText=questions[current][0];
+}
+function checkAnswer(){
+ if(answer.value.toLowerCase()==questions[current][1]){
+  score++;
+  result.innerText="✅ Bonne réponse";
+ }else{
+  result.innerText="❌ Réponse : "+questions[current][1];
+ }
+ document.getElementById("score").innerText="Score : "+score;
+ answer.value="";
+ nextQ();
+}
+nextQ();
+
+function dice(){diceR.innerText="🎲 "+(Math.floor(Math.random()*6)+1);}
+function rps(x){
+ let o=["Pierre","Feuille","Ciseaux"][Math.floor(Math.random()*3)];
+ rpsR.innerText="Ordinateur : "+o;
 }
 
-async function loadRanking(){
-const snap=await getDocs(collection(db,"scores"));
-let list=[];
-snap.forEach(d=>list.push(d.data()));
-
-list.sort((a,b)=>b.score-a.score);
-
-ranking.innerHTML=list.map((e,i)=>
-`<p>${i+1}. ${e.user} — ${e.score}</p>`
-).join("");
+const secret=Math.floor(Math.random()*100)+1;
+function guessGame(){
+ let g=Number(guess.value);
+ guessR.innerText=g===secret?"Bravo":(g<secret?"Plus grand":"Plus petit");
 }
 
-/* NOTES */
-window.addNote=async ()=>{
-const input=document.getElementById("noteInput");
-if(!input.value)return;
+function calcGame(){calcR.innerText=calc.value=="85"?"Correct":"Faux";}
+function geoGame(){geoR.innerText=geo.value.toLowerCase()=="berlin"?"Bravo":"Faux";}
 
-await addDoc(collection(db,"notes"),{
-user:currentUser,
-text:input.value
-});
-
-input.value="";
-loadNotes();
-};
-
-async function loadNotes(){
-const snap=await getDocs(collection(db,"notes"));
-notesList.innerHTML="";
-
-snap.forEach(doc=>{
-const n=doc.data();
-if(n.user===currentUser){
-const div=document.createElement("div");
-div.className="item";
-div.textContent=n.text;
-notesList.appendChild(div);
-}
-});
+let mot="BREVET",aff="______";
+function hang(){
+ let l=letter.value.toUpperCase();
+ let a=aff.split('');
+ for(let i=0;i<mot.length;i++) if(mot[i]==l) a[i]=l;
+ aff=a.join('');
+ hangWord.innerText=aff.split('').join(' ');
 }
 
-loadFiles();
-loadRanking();
-loadNotes();
+function slot(){
+ let a=Math.floor(Math.random()*3),b=Math.floor(Math.random()*3),c=Math.floor(Math.random()*3);
+ slotR.innerText=a+" "+b+" "+c;
+}
 
+function reflex(){
+ let start=Date.now();
+ setTimeout(()=>{reflexR.innerText=(Date.now()-start)+" ms";},1000+Math.random()*1000);
+}
+
+function avg(){
+ avgR.innerText=((+n1.value + +n2.value + +n3.value)/3).toFixed(2);
+}
+
+const brevet=new Date("2027-06-28");
+days.innerHTML="📅 "+Math.max(0,Math.ceil((brevet-new Date())/86400000))+" jours avant le brevet";
 </script>
 </body>
 </html>
-```
